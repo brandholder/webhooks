@@ -8,7 +8,7 @@ expand(dotenv.config({ path: '.env' }));
 if (process.env.JANDI_WEBHOOK_URL) {
   const body = `[${process.env.NODE_ENV}] ${process.argv[2] || process.env.body || ''}`.trim();
   const message = (process.argv[3] || process.env.message)?.replace(/\r?\n|\r/g, ' ');
-  if (!title && !message) return;
+  if (!body && !message) return;
 
   axios
     .post(process.env.JANDI_WEBHOOK_URL, {
