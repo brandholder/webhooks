@@ -1,24 +1,26 @@
-const axios = require('axios');
 const dotenv = require('dotenv');
-const { expand } = require('dotenv-expand');
+dotenv.config();
+Object.assign(process.env, dotenv.config({ path: `.env.${process.env.NODE_ENV}` }));
 
-expand(dotenv.config({ path: `.env.${process.env.NODE_ENV}` }));
-expand(dotenv.config({ path: '.env' }));
+async function webhook() {
+  const token = process.env.TELEGRAM_TOKEN;
+  const chat_id = process.env.TELEGRAM_TO;
+  if (token) {
+    const text = (process.argv[2] || process.env.message)?.replace(/\r?\n|\r/g, ' ');
+    if (!text) return;
 
-if (process.env.TELEGRAM_TOKEN) {
-  const message = (process.argv[2] || process.env.message)?.replace(/\r?\n|\r/g, ' ');
-  if (!message) return;
+    const url = `https://api.telegram.org/bot${token}/sendMessage`;
 
-  axios
-    .post(`https://api.telegram.org/bot${process.env.TELEGRAM_TOKEN}/sendMessage`, {
-      chat_id: process.env.TELEGRAM_TO,
-      text: message,
-      // parse_mode: 'markdown',
-    })
-    .then(function (response) {
-      console.log(JSON.stringify(response.data, null, 2));
-    })
-    .catch(function (error) {
-      console.log(error);
+    const res = await fetch(url, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json; charset=UTF-8' },
+      body: JSON.stringify({
+        chat_id,
+        text,
+        // parse_mode: 'markdown',
+      }),
     });
+    return await res.json();
+  }
 }
+webhook().then(res => console.log('Webhook sent successfully.'));
